@@ -1,6 +1,7 @@
 # capa de vista/presentación
-
 from django.shortcuts import redirect, render
+
+from app.layers.persistence import repositories
 from .layers.services import services
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth import logout
@@ -11,8 +12,8 @@ def index_page(request):
 # esta función obtiene 2 listados que corresponden a las imágenes de la API y los favoritos del usuario, y los usa para dibujar el correspondiente template.
 # si el opcional de favoritos no está desarrollado, devuelve un listado vacío.
 def home(request):
-    images = []
-    favourite_list = []
+    images = services.getAllImages()
+    favourite_list = services.getAllFavourites(request)
 
     return render(request, 'home.html', { 'images': images, 'favourite_list': favourite_list })
 
@@ -22,24 +23,31 @@ def search(request):
     # si el texto ingresado no es vacío, trae las imágenes y favoritos desde services.py,
     # y luego renderiza el template (similar a home).
     if (search_msg != ''):
-        pass
-    else:
-        return redirect('home')
+        images = services.getAllImages(search_msg)
+        favourite_list = services.getAllImages(search_msg)
+        return render(request, 'home.html', { 'images': images, 'favourite_list': favourite_list })
+
+    else: return home(request)
 
 
 # Estas funciones se usan cuando el usuario está logueado en la aplicación.
 @login_required
 def getAllFavouritesByUser(request):
-    favourite_list = []
+    favourite_list = services.getAllFavourites(request)
+
     return render(request, 'favourites.html', { 'favourite_list': favourite_list })
 
 @login_required
 def saveFavourite(request):
-    pass
+    save = services.saveFavourite(request)
+    favourite_list = services.getAllFavourites(request)
+    return render(request, 'favourites.html', { 'favourite_list': favourite_list  })
 
 @login_required
 def deleteFavourite(request):
-    pass
+    delete = services.deleteFavourite(request)
+    favourite_list = services.getAllFavourites(request)
+    return render(request, 'favourites.html', { 'favourite_list': favourite_list  })
 
 @login_required
 def exit(request):
